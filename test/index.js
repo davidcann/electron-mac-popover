@@ -15,10 +15,24 @@ app.on('ready', () => {
   const popoverWindow = new BrowserWindow({
     width: 250,
     height: 250,
-    show: false,
+	frame: false,
+    show: true,
     transparent: true,
+    titleBarStyle: "hidden",
+	type: process.platform == "darwin" ? "panel" : "toolbar",
+    fullscreenable: false,
+    focusable: false,
+    skipTaskbar: true,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    resizable: false,
   });
-
+  popoverWindow.setWindowButtonVisibility(false);
+  popoverWindow.setHasShadow(false);
+  popoverWindow.setIgnoreMouseEvents(true);
+  popoverWindow.setOpacity(0.0);
+  popoverWindow.contentView.resizable = true;
   popoverWindow.loadFile('popover.html');
 
   const nativePopover = new ElectronMacPopover(popoverWindow.getNativeWindowHandle());

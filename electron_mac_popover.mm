@@ -180,12 +180,6 @@ void ElectronMacPopover::Show(const Napi::CallbackInfo& info) {
 
     [content_ setWantsLayer:YES];
     NSView *view = content_;
-    if (content_.subviews.lastObject) {
-        view = content_.subviews.lastObject;
-        if (view.subviews.lastObject) {
-            view = view.subviews.lastObject;
-        }
-    }
 
     if (!view) {
         Napi::Error::New(env, "Missing content view")
@@ -237,11 +231,6 @@ void ElectronMacPopover::PopoverWindowClosed() {
     [[NSNotificationCenter defaultCenter]
         removeObserver:popover_closed_observer_];
     popover_closed_observer_ = nullptr;
-  }
-  if (content_ && popover_) {
-    if (content_.subviews.lastObject && popover_.contentViewController.view) {
-      [content_.subviews.lastObject addSubview:popover_.contentViewController.view];
-    }
   }
   if (tsfnClosed != NULL && callbackClosed != NULL) {
     tsfnClosed.BlockingCall(callbackClosed);
