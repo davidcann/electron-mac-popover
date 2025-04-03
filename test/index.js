@@ -32,7 +32,6 @@ app.on('ready', () => {
   popoverWindow.setHasShadow(false);
   popoverWindow.setIgnoreMouseEvents(true);
   popoverWindow.setOpacity(0.0);
-  popoverWindow.contentView.resizable = true;
   popoverWindow.loadFile('popover.html');
 
   const nativePopover = new ElectronMacPopover(popoverWindow.getNativeWindowHandle());

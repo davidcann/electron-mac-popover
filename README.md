@@ -1,5 +1,7 @@
 # electron-mac-popover
 
+	Note: to support Electron v35+, the content window must be shown before showing the popover. To accomplish this seamlessly, the window should be created with the settings shown below, so it is invisible.
+
 ## Description
 
 ```js
@@ -31,10 +33,23 @@ app.on('ready', () => {
   const popoverWindow = new BrowserWindow({
     width: 250,
     height: 250,
-    show: false,
+	frame: false,
+    show: true,
     transparent: true,
+    titleBarStyle: "hidden",
+	type: process.platform == "darwin" ? "panel" : "toolbar",
+    fullscreenable: false,
+    focusable: false,
+    skipTaskbar: true,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    resizable: false,
   });
-
+  popoverWindow.setWindowButtonVisibility(false);
+  popoverWindow.setHasShadow(false);
+  popoverWindow.setIgnoreMouseEvents(true);
+  popoverWindow.setOpacity(0.0);
   popoverWindow.loadFile('popover.html');
 
   const nativePopover = new ElectronMacPopover(popoverWindow.getNativeWindowHandle());
