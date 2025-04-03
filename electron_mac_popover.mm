@@ -181,22 +181,19 @@ void ElectronMacPopover::Show(const Napi::CallbackInfo& info) {
     [popover setContentViewController:view_controller];
 
     [content_ setWantsLayer:YES];
-    NSView *view = content_;
 
-    if (!view) {
+    if (!content_) {
         Napi::Error::New(env, "Missing content view")
             .ThrowAsJavaScriptException();
         return;
     }
 
-    objc_setAssociatedObject(view,
+    objc_setAssociatedObject(content_,
                              &kDisallowVibrancyKey,
                              @(YES),
                              OBJC_ASSOCIATION_COPY_NONATOMIC);
 
-    [popover.contentViewController setView:view];
-
-    [popover setContentSize:size];
+    [popover.contentViewController setView:content_];
 
     [popover setAppearance:[NSAppearance appearanceNamed:popover_appearance]];
 
@@ -213,6 +210,18 @@ void ElectronMacPopover::Show(const Napi::CallbackInfo& info) {
   } else if (popover_.shown) {
     return;
   }
+
+  if (size.width == 0 && size.height == 0) {
+    size = content_.bounds.size;
+  }
+  [content_window_ setFrame:NSMakeRect(0, 0, size.width, size.height) display:YES];
+  [popover_ setContentSize:size];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    for (NSView *subview in content_.subviews) {
+      [subview setFrame:NSMakeRect(0, 0, size.width, size.height)];
+    }
+    [content_ setNeedsDisplay:YES];
+  });
 
   [popover_ setBehavior:popover_behavior];
   [popover_ setAnimates:animate];
