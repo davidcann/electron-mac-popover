@@ -59,6 +59,8 @@ ElectronMacPopover::ElectronMacPopover(const Napi::CallbackInfo& info)
     Napi::TypeError::New(env, "Invalid native window handle")
         .ThrowAsJavaScriptException();
     return;
+  } else {
+    content_window_ = content_.window;
   }
 
   popover_ = nullptr;
@@ -196,7 +198,7 @@ void ElectronMacPopover::Show(const Napi::CallbackInfo& info) {
 
     [popover setContentSize:size];
 
-	[popover setAppearance:[NSAppearance appearanceNamed:popover_appearance]];
+    [popover setAppearance:[NSAppearance appearanceNamed:popover_appearance]];
 
     id observer = [[NSNotificationCenter defaultCenter]
         addObserverForName:NSPopoverDidCloseNotification
@@ -239,14 +241,14 @@ void ElectronMacPopover::PopoverWindowClosed() {
 }
 
 void ElectronMacPopover::SetupClosedCallback(const Napi::CallbackInfo &info) {
-	Napi::Env env = info.Env();
-	if (info.Length() > 0 && info[0].IsFunction()) {
-		tsfnClosed = Napi::ThreadSafeFunction::New(env, info[0].As<Napi::Function>(), "Closed", 0, 1);
-		callbackClosed = [](Napi::Env env, Napi::Function jsCallback) { jsCallback.Call({}); };
-	} else {
-		tsfnClosed = NULL;
-		callbackClosed = NULL;
-	}
+  Napi::Env env = info.Env();
+  if (info.Length() > 0 && info[0].IsFunction()) {
+    tsfnClosed = Napi::ThreadSafeFunction::New(env, info[0].As<Napi::Function>(), "Closed", 0, 1);
+    callbackClosed = [](Napi::Env env, Napi::Function jsCallback) { jsCallback.Call({}); };
+  } else {
+    tsfnClosed = NULL;
+    callbackClosed = NULL;
+  }
 }
 
 void ElectronMacPopover::SetSize(const Napi::CallbackInfo& info) {
@@ -304,10 +306,20 @@ void ElectronMacPopover::SetSize(const Napi::CallbackInfo& info) {
       currentContext.duration = duration;
       currentContext.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
       [NSAnimationContext beginGrouping];
+      [NSAnimationContext currentContext].completionHandler = ^{
+        for (NSView *subview in content_.subviews) {
+            [subview setFrame:NSMakeRect(0, 0, size.width, size.height)];
+        }
+      };
+      [[content_window_ animator] setFrame:NSMakeRect(0, 0, size.width, size.height) display:YES];
       [popover_ setContentSize:size];
       [NSAnimationContext endGrouping];
     } else {
+      [content_window_ setFrame:NSMakeRect(0, 0, size.width, size.height) display:YES];
       [popover_ setContentSize:size];
+      for (NSView *subview in content_.subviews) {
+        [subview setFrame:NSMakeRect(0, 0, size.width, size.height)];
+      }
     }
   }
 }

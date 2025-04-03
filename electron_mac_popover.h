@@ -21,6 +21,7 @@ class ElectronMacPopover : public Napi::ObjectWrap<ElectronMacPopover> {
 
   NSPopover* popover_;
   NSView* content_;
+  NSWindow* content_window_;
   id popover_closed_observer_;
 };
 

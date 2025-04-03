@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const { ElectronMacPopover } = require('../')
 
 app.on('ready', () => {
@@ -15,11 +15,11 @@ app.on('ready', () => {
   const popoverWindow = new BrowserWindow({
     width: 250,
     height: 250,
-	frame: false,
+    frame: false,
     show: true,
     transparent: true,
     titleBarStyle: "hidden",
-	type: process.platform == "darwin" ? "panel" : "toolbar",
+    type: process.platform == "darwin" ? "panel" : "toolbar",
     fullscreenable: false,
     focusable: false,
     skipTaskbar: true,
@@ -33,6 +33,20 @@ app.on('ready', () => {
   popoverWindow.setIgnoreMouseEvents(true);
   popoverWindow.setOpacity(0.0);
   popoverWindow.loadFile('popover.html');
+
+  popoverWindow.webContents.on("context-menu", (event, params) => {
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Test',
+      },
+      { type: 'separator' },
+      {
+        label: 'Inspect Element',
+        click: () => popoverWindow.webContents.inspectElement(params.x, params.y)
+      },
+    ]);
+    contextMenu.popup({ window: win });
+  });
 
   const nativePopover = new ElectronMacPopover(popoverWindow.getNativeWindowHandle());
 
